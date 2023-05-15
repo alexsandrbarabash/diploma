@@ -8,4 +8,4 @@ RUN npm run prisma:generate
 RUN npm run build
 EXPOSE 5001
 # Start application
-CMD ["node", "dist/main.js" ]
+CMD ["npm", "run", "start:prod" ]
