@@ -3,43 +3,40 @@ import { Ok, Err, Result } from 'oxide.ts';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 
-import { FillDocxTemplateCommand } from '../commands';
-import { CsvParser } from '@utils';
+import { FillDocxTemplateCommand } from './fill-docx-template.command';
 import { TelegramApiService } from '@infrastructure/telegram-api';
 import { StateService } from '../../state/services';
 import { UserStatus } from '@common/enums';
-import { DataNotFoundExceptions } from '@common/exception';
-import { FileNameUtils } from '@utils';
+import { NotFoundExceptions } from '@common/exception';
+import { FileNameUtils, FileExceptionsUtils } from '@utils';
+import { DataParserFactory } from '../factories';
 
 @CommandHandler(FillDocxTemplateCommand)
 export class FillDocxTemplateUseCase implements ICommandHandler {
-  private readonly parser: CsvParser;
-
   constructor(
     private readonly telegramApiService: TelegramApiService,
     private readonly stateService: StateService,
-  ) {
-    this.parser = new CsvParser();
-  }
+    private readonly dataParserFactory: DataParserFactory,
+  ) {}
 
   async execute(
     command: FillDocxTemplateCommand,
-  ): Promise<Result<Buffer, DataNotFoundExceptions>> {
-    const state = await this.stateService.getCurrentState(command.userId);
+  ): Promise<Result<Buffer | null, NotFoundExceptions>> {
+    const state = await this.stateService.getCurrent(command.chatId);
 
     if (state?.status !== UserStatus.WAITING_TEMPLATE) {
-      return Err(new DataNotFoundExceptions('Data not found'));
+      return Err(new NotFoundExceptions('Data not found'));
     }
 
-    const csv = await this.telegramApiService.getFile(command.fileId);
+    const parser = this.dataParserFactory.get(
+      FileExceptionsUtils.get(state.fields.fileName),
+    );
 
-    const data = this.parser.parse({
-      input: csv,
-      removeEmptyColumn: false,
-      getOriginalRaw: false,
-    });
+    const input = await this.telegramApiService.getFile(state.fields.fileId);
 
-    const template = await this.telegramApiService.getFile(state.fields.fileId);
+    const data = parser.parse(input);
+
+    const template = await this.telegramApiService.getFile(command.fileId);
 
     const zip = new PizZip();
     const templateZip = new PizZip(template);
@@ -52,14 +49,14 @@ export class FillDocxTemplateUseCase implements ICommandHandler {
           },
         });
 
-        doc.render(item.record);
+        doc.render(item);
 
         const buf = doc.getZip().generate({
           type: 'nodebuffer',
           compression: 'DEFLATE',
         });
 
-        const fileName = FileNameUtils.get(state.fields.fileName, item.record);
+        const fileName = FileNameUtils.get(command.fileName, item);
         zip.file(fileName, buf);
       }),
     );
@@ -68,6 +65,9 @@ export class FillDocxTemplateUseCase implements ICommandHandler {
       type: 'nodebuffer',
       compression: 'DEFLATE',
     });
+
+    await this.stateService.clear(command.chatId);
+
     return Ok(buf);
   }
 }

@@ -18,7 +18,7 @@ export class StateService {
     this.map = redis.createMap(RedisCollections.STATE);
   }
 
-  async setWaitingTemplateState(
+  async setWaitingTemplate(
     userId: string,
     fileId: string,
     fileName: string,
@@ -26,6 +26,52 @@ export class StateService {
     const value: CacheData = {
       status: UserStatus.WAITING_TEMPLATE,
       fields: { fileId, userId, fileName },
+    };
+
+    await this.map.set(
+      userId,
+      JSON.stringify(value),
+      this.configService.get('APP_TTL'),
+    );
+
+    return value;
+  }
+
+  async setWaitingFile(
+    userId: string,
+    type: 'template' | 'data',
+  ): Promise<CacheData> {
+    const value: CacheData = {
+      status: UserStatus.WAITING_FILE,
+      fields: { type },
+    };
+
+    await this.map.set(
+      userId,
+      JSON.stringify(value),
+      this.configService.get('APP_TTL'),
+    );
+
+    return value;
+  }
+
+  async setWaitingData(userId: string): Promise<CacheData> {
+    const value: CacheData = {
+      status: UserStatus.WAITING_DATA,
+    };
+
+    await this.map.set(
+      userId,
+      JSON.stringify(value),
+      this.configService.get('APP_TTL'),
+    );
+
+    return value;
+  }
+
+  async setWaitingFileForSave(userId: string): Promise<CacheData> {
+    const value: CacheData = {
+      status: UserStatus.WAITING_FILE_FOR_SAVE,
     };
 
     await this.map.set(
@@ -54,7 +100,7 @@ export class StateService {
     return cache.status;
   }
 
-  async getCurrentState(
+  async getCurrent(
     userId: string,
     options?: { throwError?: boolean },
   ): Promise<CacheData | undefined> {
@@ -69,5 +115,9 @@ export class StateService {
 
     const cache: CacheData = JSON.parse(value);
     return cache;
+  }
+
+  async clear(userId: string): Promise<void> {
+    await this.map.delete(userId);
   }
 }

@@ -11,6 +11,7 @@ import {
 import { StartModule, DocumentModule, StateModule } from '@module';
 import { RedisModule } from '@infrastructure/redis';
 import { ContentModule } from '@infrastructure/content';
+import { PrismaModule } from '@infrastructure/prisma';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ContentModule } from '@infrastructure/content';
       imports: [ConfigModule],
       useClass: RedisConfig,
     }),
+    PrismaModule,
     StartModule,
     DocumentModule,
     ContentModule,

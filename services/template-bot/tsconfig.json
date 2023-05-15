@@ -25,6 +25,7 @@
       "@infrastructure/*": ["src/infrastructure/*"],
       "@common/*": ["src/common/*"],
       "@utils": ["src/utils/index"],
+      "@generated/*": ["src/generated/*"]
     }
   }
 }

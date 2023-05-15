@@ -15,17 +15,19 @@ export class RedisMap {
     return this.client.keys(`${this.name}:*`);
   }
 
-  get(key: string): Promise<string | null> {
+  async get(key: string): Promise<string | null> {
     return this.client.get(this.addAlias(key));
   }
 
   async set(key: string, value: string, expired?: number): Promise<void> {
     const fullKey = this.addAlias(key);
 
-    await this.client.set(fullKey, value);
     if (expired) {
-      await this.client.expire(fullKey, expired);
+      await this.client.setex(fullKey, expired, value);
+      return;
     }
+
+    await this.client.set(fullKey, value);
   }
 
   async has(key: string): Promise<boolean> {
