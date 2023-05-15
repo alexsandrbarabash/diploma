@@ -13,6 +13,8 @@ export class RedisConfig {
       port: this.configService.get('APP_REDIS_PORT'),
       host: this.configService.get('APP_REDIS_HOST'),
       db: this.configService.get('APP_REDIS_DB'),
+      username: this.configService.get('APP_REDIS_USERNAME'),
+      password: this.configService.get('APP_REDIS_PASSWORD'),
     };
   }
 }
