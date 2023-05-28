@@ -5,4 +5,5 @@ export enum FileExtensions {
   PPTX = 'pptx',
   MD = 'md',
   TXT = 'txt',
+  JSON = 'json',
 }

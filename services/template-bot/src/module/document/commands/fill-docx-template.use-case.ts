@@ -34,15 +34,16 @@ export class FillDocxTemplateUseCase implements ICommandHandler {
 
     const input = await this.telegramApiService.getFile(state.fields.fileId);
 
-    const data = parser.parse(input);
+    const data = await parser.parse(input);
 
     const template = await this.telegramApiService.getFile(command.fileId);
 
     const zip = new PizZip();
-    const templateZip = new PizZip(template);
 
     await Promise.all(
       data.map(async (item) => {
+        const templateZip = new PizZip(template);
+
         const doc = new Docxtemplater(templateZip, {
           nullGetter(part) {
             return part.value;
@@ -55,6 +56,8 @@ export class FillDocxTemplateUseCase implements ICommandHandler {
           type: 'nodebuffer',
           compression: 'DEFLATE',
         });
+
+        console.log('item', item);
 
         const fileName = FileNameUtils.get(command.fileName, item);
         zip.file(fileName, buf);

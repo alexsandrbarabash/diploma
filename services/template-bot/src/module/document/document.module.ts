@@ -16,7 +16,7 @@ import {
   FillTemplateFactory,
   SaveFileCommandFactory,
 } from './factories';
-import { CsvParser } from './parsers';
+import { CsvParser, JsonParser } from './parsers';
 import { FileQuery } from './services';
 
 @Module({
@@ -33,6 +33,7 @@ import { FileQuery } from './services';
     FillTemplateFactory,
     SaveFileCommandFactory,
     FileQuery,
+    JsonParser,
   ],
 })
 export class DocumentModule {}

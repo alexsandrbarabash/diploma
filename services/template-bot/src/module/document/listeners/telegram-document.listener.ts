@@ -62,7 +62,7 @@ export class TelegramDocumentListener {
 
     const result = await this.commandBus.execute(command);
 
-    if (fileExtensions === FileExtensions.CSV) {
+    if (fileExtensions === FileExtensions.CSV || FileExtensions.JSON) {
       return this.contentService.saveDataResponse();
     }
 
@@ -202,7 +202,10 @@ export class TelegramDocumentListener {
 
     const result = await this.commandBus.execute(command);
 
-    if (fileExtensions === FileExtensions.CSV) {
+    if (
+      fileExtensions === FileExtensions.CSV ||
+      fileExtensions === FileExtensions.JSON
+    ) {
       return this.contentService.saveDataResponse();
     }
 

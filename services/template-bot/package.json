@@ -23,6 +23,7 @@
     "prisma:deploy": "npx prisma migrate deploy"
   },
   "dependencies": {
+    "@ariana-germany/prisma-code-generator": "~0.2.13",
     "@nestjs/axios": "2.0.0",
     "@nestjs/common": "9.0.0",
     "@nestjs/config": "2.3.1",
@@ -46,7 +47,7 @@
     "rxjs": "7.2.0",
     "string-template": "1.0.0",
     "telegraf": "4.11.2",
-    "@ariana-germany/prisma-code-generator": "~0.2.13"
+    "xml2js": "^0.6.0"
   },
   "devDependencies": {
     "@nestjs/cli": "9.0.0",

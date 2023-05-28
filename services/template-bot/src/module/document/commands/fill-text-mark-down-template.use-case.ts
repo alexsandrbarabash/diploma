@@ -34,7 +34,7 @@ export class FillTextMarkDownTemplateUseCase implements ICommandHandler {
 
     const input = await this.telegramApiService.getFile(state.fields.fileId);
 
-    const data = parser.parse(input);
+    const data = await parser.parse(input);
 
     const template = await this.telegramApiService.getFile(command.fileId);
 
