@@ -10,6 +10,7 @@ import { FillTemplateFactory, SaveFileCommandFactory } from '../factories';
 import { StateService } from '../../state/services';
 import { State, TelegrafUserId } from '@common/decorators';
 import { FileQuery } from '../services';
+import { DeleteDataFileCommand, DeleteTemplateFileCommand } from '../commands';
 
 @Update()
 export class TelegramDocumentListener {
@@ -22,7 +23,11 @@ export class TelegramDocumentListener {
     private readonly fileQuery: FileQuery,
   ) {}
 
-  @State(UserStatus.WAITING_TEMPLATE, UserStatus.WAITING_DATA)
+  @State(
+    UserStatus.WAITING_TEMPLATE,
+    UserStatus.WAITING_DATA,
+    UserStatus.WAITING_FILE_FOR_DELETE,
+  )
   @On('callback_query')
   public async onCallbackProcess(
     @Ctx() ctx: ContextWithUserState,
@@ -32,7 +37,23 @@ export class TelegramDocumentListener {
       return;
     }
 
-    const [type, entityId] = ctx.update.callback_query.data.split('_');
+    const [type, entityId, action] = ctx.update.callback_query.data.split('_');
+
+    if (action === 'delete') {
+      if (type === 'data') {
+        await this.commandBus.execute(
+          new DeleteDataFileCommand({ fileId: entityId, initiatorId: chatId }),
+        );
+      } else {
+        await this.commandBus.execute(
+          new DeleteTemplateFileCommand({
+            fileId: entityId,
+            initiatorId: chatId,
+          }),
+        );
+      }
+      return 'File was delete';
+    }
 
     let entity: Tempalte | Data;
 
@@ -62,7 +83,11 @@ export class TelegramDocumentListener {
 
     const result = await this.commandBus.execute(command);
 
-    if (fileExtensions === FileExtensions.CSV || FileExtensions.JSON) {
+    if (
+      fileExtensions === FileExtensions.CSV ||
+      fileExtensions === FileExtensions.JSON ||
+      fileExtensions === FileExtensions.XML
+    ) {
       return this.contentService.saveDataResponse();
     }
 
@@ -102,7 +127,7 @@ export class TelegramDocumentListener {
     const buttons = data.map((item) => {
       return {
         text: item.name,
-        callback_data: `template_${item.id}`,
+        callback_data: `template_${item.id}_use`,
       };
     });
 
@@ -129,11 +154,62 @@ export class TelegramDocumentListener {
     const buttons = data.map((item) => {
       return {
         text: item.name,
-        callback_data: `data_${item.id}`,
+        callback_data: `data_${item.id}_delete`,
       };
     });
 
     ctx.reply('Select data file', {
+      reply_markup: {
+        inline_keyboard: [buttons],
+      },
+    });
+  }
+
+  @Command('delete_template')
+  public async deletetemplate(
+    @TelegrafUserId() userId: string,
+    @Ctx() ctx: any,
+  ) {
+    const data = await this.fileQuery.getTemplates(userId);
+
+    if (!data.length) {
+      return this.contentService.fileNotFound();
+    }
+
+    const buttons = data.map((item) => {
+      return {
+        text: item.name,
+        callback_data: `template_${item.id}_delete`,
+      };
+    });
+
+    await this.stateService.setWaitingFileForDelete(userId);
+
+    ctx.reply('Delete template file', {
+      reply_markup: {
+        inline_keyboard: [buttons],
+      },
+    });
+  }
+
+  @Command('delete_data')
+  public async deleteData(@TelegrafUserId() userId: string, @Ctx() ctx: any) {
+    const data = await this.fileQuery.getData(userId);
+
+    if (!data.length) {
+      return this.contentService.fileNotFound();
+    }
+
+    const buttons = data.map((item) => {
+      return {
+        text: item.name,
+        callback_data: `data_${item.id}_delete`,
+      };
+    });
+
+    await this.stateService.setWaitingFileForDelete(userId);
+
+    ctx.reply('Delete data file', {
       reply_markup: {
         inline_keyboard: [buttons],
       },
@@ -204,7 +280,8 @@ export class TelegramDocumentListener {
 
     if (
       fileExtensions === FileExtensions.CSV ||
-      fileExtensions === FileExtensions.JSON
+      fileExtensions === FileExtensions.JSON ||
+      fileExtensions === FileExtensions.XML
     ) {
       return this.contentService.saveDataResponse();
     }

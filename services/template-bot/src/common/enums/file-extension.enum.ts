@@ -6,4 +6,5 @@ export enum FileExtensions {
   MD = 'md',
   TXT = 'txt',
   JSON = 'json',
+  XML = 'xml',
 }

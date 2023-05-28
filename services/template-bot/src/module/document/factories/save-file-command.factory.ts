@@ -19,6 +19,8 @@ export class SaveFileCommandFactory {
   }): Command {
     switch (fileExtensions) {
       case FileExtensions.CSV:
+      case FileExtensions.XML:
+      case FileExtensions.JSON:
         return new SaveDataFileCommand({
           chatId,
           fileId,

@@ -56,9 +56,6 @@ export class FillDocxTemplateUseCase implements ICommandHandler {
           type: 'nodebuffer',
           compression: 'DEFLATE',
         });
-
-        console.log('item', item);
-
         const fileName = FileNameUtils.get(command.fileName, item);
         zip.file(fileName, buf);
       }),

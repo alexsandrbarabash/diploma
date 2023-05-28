@@ -26,6 +26,7 @@ export class FillTemplateFactory {
     switch (fileExtensions) {
       case FileExtensions.CSV:
       case FileExtensions.JSON:
+      case FileExtensions.XML:
         return new SaveDataCommand({
           chatId,
           fileId,

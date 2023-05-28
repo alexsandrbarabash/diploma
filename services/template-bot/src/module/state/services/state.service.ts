@@ -83,6 +83,20 @@ export class StateService {
     return value;
   }
 
+  async setWaitingFileForDelete(userId: string): Promise<CacheData> {
+    const value: CacheData = {
+      status: UserStatus.WAITING_FILE_FOR_DELETE,
+    };
+
+    await this.map.set(
+      userId,
+      JSON.stringify(value),
+      this.configService.get('APP_TTL'),
+    );
+
+    return value;
+  }
+
   async getStatus(
     userId,
     options?: { throwError?: boolean },

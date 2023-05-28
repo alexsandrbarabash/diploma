@@ -10,13 +10,15 @@ import {
   FillTextMarkDownTemplateUseCase,
   SaveDataFileUseCase,
   SaveTemplateFileUseCase,
+  DeleteDataFileUseCase,
+  DeleteTemplateFileUseCase,
 } from './commands';
 import {
   DataParserFactory,
   FillTemplateFactory,
   SaveFileCommandFactory,
 } from './factories';
-import { CsvParser, JsonParser } from './parsers';
+import { CsvParser, JsonParser, XmlParser } from './parsers';
 import { FileQuery } from './services';
 
 @Module({
@@ -34,6 +36,9 @@ import { FileQuery } from './services';
     SaveFileCommandFactory,
     FileQuery,
     JsonParser,
+    XmlParser,
+    DeleteDataFileUseCase,
+    DeleteTemplateFileUseCase,
   ],
 })
 export class DocumentModule {}
