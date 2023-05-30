@@ -14,6 +14,7 @@ export class StartListener {
   @Help()
   @Start()
   public async start(@Ctx() ctx: Context): Promise<string> {
+    console.log('sdfsdf')
     const firstName = ctx.update.message.from.first_name;
     await this.prismaService.user.upsert({
       where: { chatId: ctx.update.message.chat.id.toString() },
