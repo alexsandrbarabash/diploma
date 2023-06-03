@@ -154,7 +154,7 @@ export class TelegramDocumentListener {
     const buttons = data.map((item) => {
       return {
         text: item.name,
-        callback_data: `data_${item.id}_delete`,
+        callback_data: `data_${item.id}_use`,
       };
     });
 
